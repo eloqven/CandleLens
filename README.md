@@ -147,6 +147,10 @@ The expensive part of an experiment is the math. The color is not. When the rese
 
 Configuration is a chore to re-enter. The instrument persists the last pre-calculation configuration and the last viewer settings — render mode, colors, mesh — to local storage, and restores them on the next open. Nothing leaves the machine; it is a convenience, not a record. The researcher's setup survives a refresh, so the next session starts where the last one ended.
 
+## The four prices, each on its own switch
+
+When a point is selected and its nearby lines revealed, the researcher may not want all four prices at once. The instrument offers four switches — Open, High, Low, Close — all on by default. Flipping one filters the revealed lines to the enabled sources, so a question about closes is answered by closes alone. The averages were computed for every price; which ones matter now is the researcher's choice.
+
 ## Status
 
-Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
+Part 1 is complete (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase has grown into it one capability at a time. The instrument is ready for the first real experiments — though, as of this writing, no live market data has yet been ingested (BTC/USDT is the designated mandatory asset, and a control asset is still to be chosen).
