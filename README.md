@@ -111,6 +111,10 @@ When a run completes, the instrument persists three layers together: the metadat
 
 Before the math starts, the instrument shows exactly what it is about to do — asset, interval, history, indicator families, sources, period range, mode, line count, render mode, estimated points and time — and asks the user to confirm. This is not bureaucracy; it is the moment the researcher owns the experiment. And once it runs, the progress shown is *real*: lines completed over lines total, with an ETA that is openly labelled an estimate. The system is allowed to take minutes; it is not allowed to pretend.
 
+## The researcher can move through time
+
+The instrument does not lock the researcher to one fixed frame. Zoom and pan move across the candle series without recomputation — the same computed matrix is simply viewed at a different scale or position. Hovering reads the price at the cursor. The data is fixed once computed; the vantage is free.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
