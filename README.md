@@ -115,6 +115,10 @@ Before the math starts, the instrument shows exactly what it is about to do — 
 
 The instrument does not lock the researcher to one fixed frame. Zoom and pan move across the candle series without recomputation — the same computed matrix is simply viewed at a different scale or position. Hovering reads the price at the cursor. The data is fixed once computed; the vantage is free.
 
+## Five points, not one
+
+A candle is not a single number. The instrument treats each candle as five meaningful points — open, high, low, close, and the midpoint between high and low. When the researcher hovers, the instrument snaps to whichever of these five is nearest on screen, because the question is rarely "the close" — it is "which part of this candle does the average actually touch?" The five points make that question answerable.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
