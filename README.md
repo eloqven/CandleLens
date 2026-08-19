@@ -63,6 +63,10 @@ The workflow is progressive on purpose. A user can generate and inspect the cand
 
 CandleLens computes three kinds of moving average — simple, exponential, and weighted — not because one is "correct," but because they weight the recent past differently. A simple average treats every candle equally; an exponential average leans on the newest; a weighted average scales linearly by recency. If a boundary appears under all three, it is more interesting than one that survives only a particular weighting. The instrument is built to compute families, not single lines, precisely so that such cross-family agreement (or disagreement) becomes visible.
 
+## Sampling the space of periods
+
+A moving average can be computed for *any* period, and the research question is about structure across many periods — not one. But computing all thousand periods is expensive, so the instrument offers three ways to sample the period space: sequentially (every Nth period), by the Fibonacci sequence (a sparse, naturally interesting ladder), or by divisibility (every multiple of N, also a deliberate debugging/thinning tool). The range boundary `0` is never an actual period; it is only the edge of the dial. Whichever mode is chosen, the exact set of periods is known up front, so the displayed line count always equals what actually gets computed — no silent discrepancy between promise and result.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
