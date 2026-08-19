@@ -123,6 +123,10 @@ A candle is not a single number. The instrument treats each candle as five meani
 
 Selecting a snap point asks a precise question: which of the thousands of indicator lines actually pass through this point? The instrument answers by revealing, within a tolerance, every line that crosses the selected price at that candle. The tolerance is a fraction of the visible price range, so "near" means the same thing whether prices are in the tens or the tens of thousands. What was a wall of color becomes a short, specific list.
 
+## Many points, one answer
+
+One point is a question; several points are a pattern. When the researcher selects multiple snap points, the instrument narrows to the lines that describe *all* of them — the averages that touch every selected point within tolerance. The intersection, not the union, is the finding: a small set of lines that consistently bound the chosen moments. That is the hypothesis made visible.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
