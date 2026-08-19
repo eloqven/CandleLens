@@ -39,6 +39,10 @@ A pattern "discovered" by silently blending two exchanges is not a pattern — i
 
 Before any candle is trusted, the sequence is validated: timestamp continuity, duplicate and missing minutes, out-of-order rows, malformed values, and impossible OHLC relationships (a low above the close, a high below the open) are all detected and reported. A run must never proceed while quietly believing the data is continuous. The validation report distinguishes an expected dataset boundary from a real gap, because only the latter should abort an experiment.
 
+## One canonical dataset, derived everywhere else
+
+The validated 1-minute history is stored as the single source of truth. Every larger candle interval — 2 minutes, 233 minutes, 377 minutes — is *derived* from it by deterministic aggregation, never re-downloaded. This keeps the instrument internally consistent: the same base always yields the same derived candle, so an experiment is reproducible down to the pixel. Persistence is not an afterthought; the base dataset, once verified, is kept so that revisiting an asset does not mean re-fetching and re-validating the past.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
