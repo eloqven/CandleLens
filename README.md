@@ -75,6 +75,10 @@ The indicator engine takes a configuration — three slots, each with a type and
 
 The instrument is explicitly permitted to perform long calculations — the user has accepted that an advanced configuration may run for minutes. What is not acceptable is for the interface to seize up while it thinks. Computation therefore runs off the main thread, and progress is reported as *lines completed*, not as a guess from the clock. A run that takes ten minutes is fine; a run that locks the browser for ten minutes is not. Correctness is never sacrificed for instant response, but responsiveness is never sacrificed for correctness either — they are separated by architecture.
 
+## The renderer only draws
+
+The rendering layer receives geometry that is already computed and turns it into pixels. It never calculates an indicator, never aggregates a candle, never decides what is meaningful. This strict boundary is what makes the renderer replaceable: today it is Canvas2D, tomorrow it could be WebGL or a server-side image, without touching a line of mathematics. The same discipline applies to styling — colors and opacity are presentation layered on top of stored results, not baked into the computation.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
