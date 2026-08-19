@@ -1,3 +1,7 @@
 # server-spike SQLite databases (generated locally)
 server/*.db
 server/*.db-journal
+
+# python cache
+__pycache__/
+*.pyc
