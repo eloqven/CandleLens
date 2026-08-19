@@ -44,9 +44,15 @@ Responses are gzip-encoded when the client sends `Accept-Encoding: gzip`.
 CORS is open (`Access-Control-Allow-Origin: *`) for local prototype use.
 
 ## Scope of the spike
-This validates the architecture: a thin Python API + SQLite can serve only the
-slices the view needs, keeping the browser light at scale. It is **not** yet
-wired to the TypeScript client, does not yet implement the full period
-generation modes (only `sequential` and `fibonacci`), and has no auth, caching
-layer, or hot/de-cache policy yet — those are the next steps if this mode is
-chosen over the browser-only `master`.
+This validates the architecture: a thin Python API + SQLite. The TypeScript
+client (`src/server/client.ts`) is wired as a proof of concept — it calls
+`/indicators` and `/candles` and maps the response into the same
+`IndicatorLine` domain type the browser engine produces, so the rest of the
+render pipeline is unchanged. `tests/server/client.test.ts` (mocked) and
+`tests/server/integration.test.ts` (boots this server and calls it live)
+cover it.
+
+It is **not** yet swapped into the UI in place of the Web Worker, does not yet
+implement the full period generation modes (only `sequential` and
+`fibonacci`), and has no auth, caching layer, or hot/de-cache policy yet —
+those are the next steps if this mode is chosen over the browser-only `master`.
