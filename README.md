@@ -131,6 +131,10 @@ One point is a question; several points are a pattern. When the researcher selec
 
 Thousands of lines are only useful when the researcher can thin them. The instrument groups indicators into layers — by family (moving average, exponential, weighted) and by price source (open, high, low, close) — and lets each layer be shown or hidden independently. A hypothesis about closes is not muddied by a wall of opens. The data stays; the view is the researcher's to compose.
 
+## The past stays on the shelf
+
+Every completed experiment is kept, not thrown away. The instrument presents a list of saved runs with their metadata — asset, interval, candle count, status, fingerprint — so the researcher can return to any of them. The library of experiments is itself a research instrument: comparison across runs is only possible if the runs survive.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
