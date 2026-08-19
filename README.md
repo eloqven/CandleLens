@@ -139,6 +139,10 @@ Every completed experiment is kept, not thrown away. The instrument presents a l
 
 A run can be reopened alone, or several at once — overlaid to compare how different configurations describe the same market. But overlay is only honest when the runs share the same candle interval and count, so their indicator lines line up index by index. The instrument refuses to overlay mismatched runs and says why. Comparison is a feature; false comparison is a bug.
 
+## Recolor, do not recompute
+
+The expensive part of an experiment is the math. The color is not. When the researcher wants a different gradient, a different palette, a different way of telling periods apart, the instrument recolors the already-computed lines instantly — no worker, no wait. Presentation is cheap precisely because the data is fixed. This is the dividend of separating the matrix from its rendering.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
