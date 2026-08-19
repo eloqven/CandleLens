@@ -91,6 +91,10 @@ With hundreds of lines on screen, color is not decoration — it is the axis we 
 
 When thousands of indicator lines are computed, drawing them all is not insight — it is noise. The mesh mode collapses the entire family into a single field: at every point in price-time, how strongly do nearby lines pull? The result is a heat surface that reveals *where* moving averages crowd and *where* they don't, without the eye drowning in individual strokes. A steepness control tunes how abruptly the field transitions near a line, letting the user sharpen the boundaries they care about or smooth them into a continuous wash — a viewing parameter, never a recomputation.
 
+## A run has a life of its own
+
+A calculation is not a moment; it is a record that moves through a lifecycle — created, queued, running, completed, failed, cancelled — with progress tracked independently of status. Treating runs as first-class, persistent objects is what lets the instrument behave like a research notebook: each experiment is saved with its full configuration and result, a failed run keeps enough metadata to be understood, and the list of past runs becomes the material for comparison. The instrument is not a chart you look at once; it is a collection of experiments you return to.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
