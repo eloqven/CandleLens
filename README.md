@@ -83,6 +83,10 @@ The rendering layer receives geometry that is already computed and turns it into
 
 A run is not a transient computation; it is a stored artifact. The raw indicator matrix and a render-ready geometry are both persisted, separately from presentation styling. That separation is the whole point: reopening a run should be nearly instant and should never recompute the moving averages, and restyling a run (new colors, new opacity) should require no numerical work at all. The instrument is built for *repeatable research* — the expensive step happens once, and every later visit to the same experiment is cheap.
 
+## Color is how we read the structure
+
+With hundreds of lines on screen, color is not decoration — it is the axis we read by. A gradient from short to long period lets the eye trace how behavior changes with horizon; a palette keeps many families distinguishable; per-line colors make individual periods addressable. Because color is presentation, it is stored separately from the numbers, so the same computed result can be re-colored endlessly without ever being recomputed. The meaning lives in the geometry; color is the lens we tune to see it.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
