@@ -135,6 +135,10 @@ Thousands of lines are only useful when the researcher can thin them. The instru
 
 Every completed experiment is kept, not thrown away. The instrument presents a list of saved runs with their metadata — asset, interval, candle count, status, fingerprint — so the researcher can return to any of them. The library of experiments is itself a research instrument: comparison across runs is only possible if the runs survive.
 
+## Loading many runs, but only when they can be compared
+
+A run can be reopened alone, or several at once — overlaid to compare how different configurations describe the same market. But overlay is only honest when the runs share the same candle interval and count, so their indicator lines line up index by index. The instrument refuses to overlay mismatched runs and says why. Comparison is a feature; false comparison is a bug.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
