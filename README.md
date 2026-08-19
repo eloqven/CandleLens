@@ -55,6 +55,10 @@ Any integer interval from 1 to 377 minutes is valid — not only the familiar Fi
 
 Once an interval is chosen, the instrument offers not "load everything" or "load a bit," but a continuous fraction of the available history — 0 to 100%. The percentage is only a handle; what the engine actually consumes is a candle count, the most recent slice of the series. This keeps the experiment honest about scale: a 10% window of 233-minute candles and a 100% window are different experiments, and the count is what gets recorded and reproduced.
 
+## See the candles before the math
+
+The workflow is progressive on purpose. A user can generate and inspect the candlestick chart *before* committing to any indicator calculation. This matters because the question is not "what do my indicators say?" but "does the price structure itself suggest something worth overlaying indicators on?" The candles are the ground truth; everything computed later is a lens laid on top of them, and the lens should never obscure the ground.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
