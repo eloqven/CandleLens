@@ -79,6 +79,10 @@ The instrument is explicitly permitted to perform long calculations — the user
 
 The rendering layer receives geometry that is already computed and turns it into pixels. It never calculates an indicator, never aggregates a candle, never decides what is meaningful. This strict boundary is what makes the renderer replaceable: today it is Canvas2D, tomorrow it could be WebGL or a server-side image, without touching a line of mathematics. The same discipline applies to styling — colors and opacity are presentation layered on top of stored results, not baked into the computation.
 
+## Calculate once, revisit cheaply
+
+A run is not a transient computation; it is a stored artifact. The raw indicator matrix and a render-ready geometry are both persisted, separately from presentation styling. That separation is the whole point: reopening a run should be nearly instant and should never recompute the moving averages, and restyling a run (new colors, new opacity) should require no numerical work at all. The instrument is built for *repeatable research* — the expensive step happens once, and every later visit to the same experiment is cheap.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
