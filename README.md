@@ -59,6 +59,10 @@ Once an interval is chosen, the instrument offers not "load everything" or "load
 
 The workflow is progressive on purpose. A user can generate and inspect the candlestick chart *before* committing to any indicator calculation. This matters because the question is not "what do my indicators say?" but "does the price structure itself suggest something worth overlaying indicators on?" The candles are the ground truth; everything computed later is a lens laid on top of them, and the lens should never obscure the ground.
 
+## Three families of moving average
+
+CandleLens computes three kinds of moving average — simple, exponential, and weighted — not because one is "correct," but because they weight the recent past differently. A simple average treats every candle equally; an exponential average leans on the newest; a weighted average scales linearly by recency. If a boundary appears under all three, it is more interesting than one that survives only a particular weighting. The instrument is built to compute families, not single lines, precisely so that such cross-family agreement (or disagreement) becomes visible.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
