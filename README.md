@@ -25,6 +25,12 @@ Most charting tools either hide the moving-average machinery behind a few preset
 4. **Calculate once, revisit cheaply.** Raw computation and render-ready geometry are stored separately from presentation styling, so runs reload fast and can be recolored without recomputation.
 5. **Correctness over instant response.** Expensive calculations are allowed; the system estimates workload, shows real progress, persists runs, and avoids unnecessary recomputation.
 
+## A run is a hypothesis, written as configuration
+
+CandleLens does not ask "what indicator should I show you?" It asks you to *specify an experiment*: which asset, which candle interval, how much history, which moving-average families, which price sources, which period range, and how densely. That full description — the **run configuration** — is the unit of work. It is serializable, hashable, and reproducible, so two people (or the same person, weeks apart) can ask "was this the same experiment?" and get a definite answer.
+
+This matters because the research question is not "does MA(50) look interesting?" but "across many assets, intervals, and MA families, do recurring boundaries emerge?" Treating configuration as first-class data is what makes that question answerable instead of anecdotal.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
