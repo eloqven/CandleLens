@@ -103,6 +103,10 @@ Before any heavy calculation begins, the instrument states its price: how many l
 
 Every run carries a deterministic fingerprint of the configuration that actually affects the math — asset, interval, history, indicator types, sources, range, mode, step, divisor. Presentation is excluded on purpose: a red line and a blue line that compute identically are the *same experiment*, and the instrument should know it. The fingerprint lets the system prevent accidental duplicate runs, group comparable experiments, and answer the researcher's recurring question — "have I already tried this?" — with certainty rather than memory.
 
+## The experiment is saved, not discarded
+
+When a run completes, the instrument persists three layers together: the metadata (what was done and how it went), the raw computed matrix (the actual indicator numbers), and the render-ready geometry (what the screen needs). Because the numbers are stored, reopening a run is a read, not a recomputation — the expensive step happens once. Because geometry is stored separately from presentation, the same run can be recolored or re-viewed endlessly. The instrument accumulates a library of experiments; each visit to an old run is cheap, and the past stays available for comparison.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.

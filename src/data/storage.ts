@@ -6,8 +6,9 @@
 import type { Candle, DataProvenance } from '../core/types';
 
 const DB_NAME = 'candlelens';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE = 'datasets';
+const RUNS_STORE = 'runs';
 
 export interface DatasetRecord {
   /** Stable key, e.g. "Binance:BTCUSDT". */
@@ -35,6 +36,10 @@ function openDB(factory: IDBFactoryLike): Promise<IDBDatabase> {
       const db = req.result;
       if (!db.objectStoreNames.contains(STORE)) {
         db.createObjectStore(STORE, { keyPath: 'key' });
+      }
+      // Co-created so both stores exist regardless of which module opens first.
+      if (!db.objectStoreNames.contains(RUNS_STORE)) {
+        db.createObjectStore(RUNS_STORE, { keyPath: 'meta.id' });
       }
     };
     req.onsuccess = () => resolve(req.result);
