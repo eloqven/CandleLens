@@ -51,6 +51,10 @@ Bitcoin is the mandatory benchmark: liquid, long-lived, high-quality. The second
 
 Any integer interval from 1 to 377 minutes is valid — not only the familiar Fibonacci numbers. Larger intervals are *aggregated*, never re-fetched, so the choice of interval is a free experimental dial: compress 233 minutes of history into one candle and the same moving averages describe a different rhythm. The interval selector is deliberately unrestricted because the research question is about structure across scales, not about a handful of conventional chart settings.
 
+## How much of the past to look at
+
+Once an interval is chosen, the instrument offers not "load everything" or "load a bit," but a continuous fraction of the available history — 0 to 100%. The percentage is only a handle; what the engine actually consumes is a candle count, the most recent slice of the series. This keeps the experiment honest about scale: a 10% window of 233-minute candles and a 100% window are different experiments, and the count is what gets recorded and reproduced.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
