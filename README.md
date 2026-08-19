@@ -127,6 +127,10 @@ Selecting a snap point asks a precise question: which of the thousands of indica
 
 One point is a question; several points are a pattern. When the researcher selects multiple snap points, the instrument narrows to the lines that describe *all* of them — the averages that touch every selected point within tolerance. The intersection, not the union, is the finding: a small set of lines that consistently bound the chosen moments. That is the hypothesis made visible.
 
+## Turn the layers on and off
+
+Thousands of lines are only useful when the researcher can thin them. The instrument groups indicators into layers — by family (moving average, exponential, weighted) and by price source (open, high, low, close) — and lets each layer be shown or hidden independently. A hypothesis about closes is not muddied by a wall of opens. The data stays; the view is the researcher's to compose.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
