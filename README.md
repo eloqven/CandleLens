@@ -31,6 +31,14 @@ CandleLens does not ask "what indicator should I show you?" It asks you to *spec
 
 This matters because the research question is not "does MA(50) look interesting?" but "across many assets, intervals, and MA families, do recurring boundaries emerge?" Treating configuration as first-class data is what makes that question answerable instead of anecdotal.
 
+## One source of truth, taken seriously
+
+A pattern "discovered" by silently blending two exchanges is not a pattern — it is an artifact of the blend. CandleLens therefore commits to a single historical data source per experiment, and records that source's identity and the exact window obtained as provenance on every run. The ingestion walks backward from the newest available candle and stops at the first unacceptable timestamp gap or the 48-month boundary, whichever comes first; the *actual* length retrieved is stored rather than assumed. The instrument is only as honest as its inputs, so provenance is not metadata decoration — it is part of the result.
+
+## Continuity is verified, never assumed
+
+Before any candle is trusted, the sequence is validated: timestamp continuity, duplicate and missing minutes, out-of-order rows, malformed values, and impossible OHLC relationships (a low above the close, a high below the open) are all detected and reported. A run must never proceed while quietly believing the data is continuous. The validation report distinguishes an expected dataset boundary from a real gap, because only the latter should abort an experiment.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
