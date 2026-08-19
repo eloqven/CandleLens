@@ -87,3 +87,43 @@ export function computeIndicators(
 
   return { lines, candleCount: candles.length };
 }
+
+export type ProgressFn = (completed: number, total: number) => void;
+
+/**
+ * Compute all lines while reporting progress. The progress count is the number
+ * of fully computed lines, so the UI can show real completion rather than
+ * elapsed time (MD §18).
+ */
+export function computeIndicatorsWithProgress(
+  candles: Candle[],
+  config: IndicatorConfig,
+  onProgress?: ProgressFn,
+): ComputeResult {
+  const periods = generatePeriods(config);
+  const lines: IndicatorLine[] = [];
+  const total = config.slots.reduce(
+    (acc, s) => acc + s.sources.length * periods.length,
+    0,
+  );
+
+  let completed = 0;
+  for (const slot of config.slots) {
+    for (const source of slot.sources) {
+      const series = priceSeries(candles, source);
+      for (const period of periods) {
+        lines.push({
+          id: `${slot.type}-${source}-${period}`,
+          type: slot.type,
+          source,
+          period,
+          values: computeOne(slot.type, series, period),
+        });
+        completed++;
+        onProgress?.(completed, total);
+      }
+    }
+  }
+
+  return { lines, candleCount: candles.length };
+}
