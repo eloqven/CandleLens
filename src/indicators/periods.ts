@@ -3,7 +3,8 @@
 // agrees with the actual computation. The range boundary `0` is never treated
 // as an actual period — periods start at 1.
 
-import type { PeriodMode, PeriodRange } from '../core/types';
+import type { PeriodMode } from '../core/types';
+import type { PeriodRange } from '../core/config';
 
 export interface PeriodGenOptions {
   range: PeriodRange;

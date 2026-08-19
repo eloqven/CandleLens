@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { aggregateCandles, validateInterval, MIN_INTERVAL, MAX_INTERVAL } from '../../src/candle/aggregate';
+import { aggregateCandles, validateInterval } from '../../src/candle/aggregate';
 import { MINUTE_MS, type Candle } from '../../src/core/types';
 
 function base(start: number, count: number): Candle[] {
