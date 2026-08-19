@@ -95,6 +95,10 @@ When thousands of indicator lines are computed, drawing them all is not insight 
 
 A calculation is not a moment; it is a record that moves through a lifecycle — created, queued, running, completed, failed, cancelled — with progress tracked independently of status. Treating runs as first-class, persistent objects is what lets the instrument behave like a research notebook: each experiment is saved with its full configuration and result, a failed run keeps enough metadata to be understood, and the list of past runs becomes the material for comparison. The instrument is not a chart you look at once; it is a collection of experiments you return to.
 
+## Know the cost before you pay it
+
+Before any heavy calculation begins, the instrument states its price: how many lines, how many candles, how many data points, and a best-effort time estimate. This is not a decorative number — it is derived from the actual selected configuration, so the user can decide whether a ten-minute run is worth starting. And the progress bar that follows measures *lines completed*, never the clock, because an estimate that quietly becomes a lie is worse than no estimate. The system may run for minutes; it will not pretend to know exactly how long.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
