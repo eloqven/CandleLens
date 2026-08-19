@@ -5,10 +5,24 @@
 
 import type { RunRecord } from './runModel';
 import type { IDBFactoryLike } from '../data/storage';
+import {
+  compressLines,
+  compressGeometry,
+  decompressLines,
+  decompressGeometry,
+  type CompressedLines,
+  type CompressedGeometry,
+} from '../compress/codec';
 
 const DB_NAME = 'candlelens';
 const DB_VERSION = 2; // bumped to add the runs store
 const STORE = 'runs';
+
+/** On-disk form: the raw matrix + geometry are stored compressed. */
+type StoredRun = {
+  meta: RunRecord['meta'];
+  payload: { lines: CompressedLines; geometry: CompressedGeometry };
+};
 
 function getFactory(injected?: IDBFactoryLike): IDBFactoryLike {
   if (injected) return injected;
@@ -47,14 +61,29 @@ function reqToPromise<T>(req: IDBRequest<T>): Promise<T> {
 
 export async function saveRun(record: RunRecord, factory?: IDBFactoryLike): Promise<void> {
   const db = await openDB(getFactory(factory));
-  await reqToPromise(tx(db, 'readwrite').put(record));
+  const stored: StoredRun = {
+    meta: record.meta,
+    payload: {
+      lines: compressLines(record.payload.lines),
+      geometry: compressGeometry(record.payload.geometry),
+    },
+  };
+  await reqToPromise(tx(db, 'readwrite').put(stored));
 }
 
 export async function loadRun(id: string, factory?: IDBFactoryLike): Promise<RunRecord | undefined> {
   const db = await openDB(getFactory(factory));
-  return reqToPromise<RunRecord | undefined>(
-    tx(db, 'readonly').get(id) as IDBRequest<RunRecord | undefined>,
+  const stored = await reqToPromise<StoredRun | undefined>(
+    tx(db, 'readonly').get(id) as IDBRequest<StoredRun | undefined>,
   );
+  if (!stored) return undefined;
+  return {
+    meta: stored.meta,
+    payload: {
+      lines: decompressLines(stored.payload.lines),
+      geometry: decompressGeometry(stored.payload.geometry),
+    },
+  };
 }
 
 export async function deleteRun(id: string, factory?: IDBFactoryLike): Promise<void> {
@@ -65,6 +94,6 @@ export async function deleteRun(id: string, factory?: IDBFactoryLike): Promise<v
 /** List run metadata only (no raw matrix / geometry) for the Load tab. */
 export async function listRuns(factory?: IDBFactoryLike): Promise<RunRecord['meta'][]> {
   const db = await openDB(getFactory(factory));
-  const all = await reqToPromise<RunRecord[]>(tx(db, 'readonly').getAll() as IDBRequest<RunRecord[]>);
+  const all = await reqToPromise<StoredRun[]>(tx(db, 'readonly').getAll() as IDBRequest<StoredRun[]>);
   return all.map((r) => r.meta);
 }

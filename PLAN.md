@@ -118,3 +118,7 @@ Then integration commits (`C11`, `C13`, `C20`, UI tabs) are done sequentially si
 - **C0–C31 complete and pushed to `master`.** Each requirement shipped as its own signed commit with a README update and unit tests where the logic was pure/testable.
 - `C30` (settings persistence) and `C31` (point-click OHLC toggles) were added by the user after the original plan and implemented last, each as its own signed commit.
 - **Dataset status:** no live Binance data has been ingested yet. `C2` ingestion is implemented and mock-tested only. BTC/USDT is the designated mandatory asset; the control asset (shortlist ETHUSDT/SOLUSDT/BNBUSDT/XRPUSDT/DOGEUSDT) is still to be chosen, and the 48-month fetch is a pending manual step.
+
+## 10. Storage mode decision (post-C31)
+- Heavy payloads (canonical 1-min candles, per-run raw matrix) are stored **compressed** (columnar `Float64Array` → DEFLATE via `fflate`) in IndexedDB. Smooth series compress well; if still too large, the fallback is trimming *what* is recorded.
+- For scale beyond the browser, a **server-backed mode** is explored on a separate branch `server-spike`: a small **Python + SQLite** API ingests candles and computes indicator lines **server-side**, returning only the slices the view needs. Compute moves to the server; the browser only renders. The two modes live on separate branches and are switched during the prototype phase.

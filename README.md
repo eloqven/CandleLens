@@ -107,6 +107,8 @@ Every run carries a deterministic fingerprint of the configuration that actually
 
 When a run completes, the instrument persists three layers together: the metadata (what was done and how it went), the raw computed matrix (the actual indicator numbers), and the render-ready geometry (what the screen needs). Because the numbers are stored, reopening a run is a read, not a recomputation — the expensive step happens once. Because geometry is stored separately from presentation, the same run can be recolored or re-viewed endlessly. The instrument accumulates a library of experiments; each visit to an old run is cheap, and the past stays available for comparison.
 
+The heavy numeric payloads — the canonical 1-minute candles and the per-run raw matrix — are stored **compressed** (columnar `Float64Array` → DEFLATE). Smooth price and indicator series compress well, so the on-disk footprint is a fraction of the raw size. If a configuration still proves too large, the next lever is trimming *what* is recorded, not how.
+
 ## A run begins with a moment of accountability
 
 Before the math starts, the instrument shows exactly what it is about to do — asset, interval, history, indicator families, sources, period range, mode, line count, render mode, estimated points and time — and asks the user to confirm. This is not bureaucracy; it is the moment the researcher owns the experiment. And once it runs, the progress shown is *real*: lines completed over lines total, with an ETA that is openly labelled an estimate. The system is allowed to take minutes; it is not allowed to pretend.
@@ -150,6 +152,15 @@ Configuration is a chore to re-enter. The instrument persists the last pre-calcu
 ## The four prices, each on its own switch
 
 When a point is selected and its nearby lines revealed, the researcher may not want all four prices at once. The instrument offers four switches — Open, High, Low, Close — all on by default. Flipping one filters the revealed lines to the enabled sources, so a question about closes is answered by closes alone. The averages were computed for every price; which ones matter now is the researcher's choice.
+
+## Two modes, two branches
+
+This repository explores two data modes during the prototype phase, kept on separate branches so each stays clean:
+
+- **`master`** — the browser-only mode. Data lives in IndexedDB (compressed), compute runs in a Web Worker, and the whole instrument runs from the client. This is the default prototype.
+- **`server-spike`** — a server-backed mode. A small Python + SQLite API ingests the candles and computes the indicator lines server-side, returning only what the view needs; the browser renders. This branch is a spike to validate that architecture at scale.
+
+Switch branches to choose the mode; the shared concepts above apply to both.
 
 ## Status
 

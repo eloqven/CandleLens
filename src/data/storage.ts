@@ -4,6 +4,7 @@
 // candles are derived.
 
 import type { Candle, DataProvenance } from '../core/types';
+import { compressCandles, decompressCandles, type CompressedCandles } from '../compress/codec';
 
 const DB_NAME = 'candlelens';
 const DB_VERSION = 2;
@@ -18,6 +19,9 @@ export interface DatasetRecord {
   provenance: DataProvenance;
   candles: Candle[];
 }
+
+/** On-disk form: candles are stored compressed, not as objects. */
+type StoredDataset = Omit<DatasetRecord, 'candles'> & CompressedCandles;
 
 export type IDBFactoryLike = {
   open(name: string, version?: number): IDBOpenDBRequest;
@@ -66,10 +70,16 @@ export async function saveDataset(
   record: DatasetRecord,
   factory?: IDBFactoryLike,
 ): Promise<void> {
-  const db = openDB(getFactory(factory));
-  const database = await db;
+  const database = await openDB(getFactory(factory));
   const store = tx(database, 'readwrite');
-  await reqToPromise(store.put(record));
+  const stored: StoredDataset = {
+    key: record.key,
+    sourceName: record.sourceName,
+    sourceSymbol: record.sourceSymbol,
+    provenance: record.provenance,
+    ...compressCandles(record.candles),
+  };
+  await reqToPromise(store.put(stored));
 }
 
 export async function loadDataset(
@@ -78,7 +88,17 @@ export async function loadDataset(
 ): Promise<DatasetRecord | undefined> {
   const database = await openDB(getFactory(factory));
   const store = tx(database, 'readonly');
-  return reqToPromise<DatasetRecord | undefined>(store.get(key) as IDBRequest<DatasetRecord | undefined>);
+  const stored = await reqToPromise<StoredDataset | undefined>(
+    store.get(key) as IDBRequest<StoredDataset | undefined>,
+  );
+  if (!stored) return undefined;
+  return {
+    key: stored.key,
+    sourceName: stored.sourceName,
+    sourceSymbol: stored.sourceSymbol,
+    provenance: stored.provenance,
+    candles: decompressCandles(stored, stored.sourceSymbol, stored.sourceName),
+  };
 }
 
 export async function deleteDataset(
@@ -96,6 +116,6 @@ export async function listDatasets(
 ): Promise<Array<Omit<DatasetRecord, 'candles'>>> {
   const database = await openDB(getFactory(factory));
   const store = tx(database, 'readonly');
-  const all = await reqToPromise<DatasetRecord[]>(store.getAll() as IDBRequest<DatasetRecord[]>);
-  return all.map(({ candles: _candles, ...meta }) => meta);
+  const all = await reqToPromise<StoredDataset[]>(store.getAll() as IDBRequest<StoredDataset[]>);
+  return all.map(({ blob: _blob, count: _count, ...meta }) => meta);
 }
