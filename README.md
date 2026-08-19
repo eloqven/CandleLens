@@ -119,6 +119,10 @@ The instrument does not lock the researcher to one fixed frame. Zoom and pan mov
 
 A candle is not a single number. The instrument treats each candle as five meaningful points — open, high, low, close, and the midpoint between high and low. When the researcher hovers, the instrument snaps to whichever of these five is nearest on screen, because the question is rarely "the close" — it is "which part of this candle does the average actually touch?" The five points make that question answerable.
 
+## A click reveals what the average touches
+
+Selecting a snap point asks a precise question: which of the thousands of indicator lines actually pass through this point? The instrument answers by revealing, within a tolerance, every line that crosses the selected price at that candle. The tolerance is a fraction of the visible price range, so "near" means the same thing whether prices are in the tens or the tens of thousands. What was a wall of color becomes a short, specific list.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
