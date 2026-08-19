@@ -107,6 +107,10 @@ Every run carries a deterministic fingerprint of the configuration that actually
 
 When a run completes, the instrument persists three layers together: the metadata (what was done and how it went), the raw computed matrix (the actual indicator numbers), and the render-ready geometry (what the screen needs). Because the numbers are stored, reopening a run is a read, not a recomputation — the expensive step happens once. Because geometry is stored separately from presentation, the same run can be recolored or re-viewed endlessly. The instrument accumulates a library of experiments; each visit to an old run is cheap, and the past stays available for comparison.
 
+## A run begins with a moment of accountability
+
+Before the math starts, the instrument shows exactly what it is about to do — asset, interval, history, indicator families, sources, period range, mode, line count, render mode, estimated points and time — and asks the user to confirm. This is not bureaucracy; it is the moment the researcher owns the experiment. And once it runs, the progress shown is *real*: lines completed over lines total, with an ETA that is openly labelled an estimate. The system is allowed to take minutes; it is not allowed to pretend.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
