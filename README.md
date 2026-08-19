@@ -67,6 +67,10 @@ CandleLens computes three kinds of moving average — simple, exponential, and w
 
 A moving average can be computed for *any* period, and the research question is about structure across many periods — not one. But computing all thousand periods is expensive, so the instrument offers three ways to sample the period space: sequentially (every Nth period), by the Fibonacci sequence (a sparse, naturally interesting ladder), or by divisibility (every multiple of N, also a deliberate debugging/thinning tool). The range boundary `0` is never an actual period; it is only the edge of the dial. Whichever mode is chosen, the exact set of periods is known up front, so the displayed line count always equals what actually gets computed — no silent discrepancy between promise and result.
 
+## The engine does the math; the interface does not
+
+The indicator engine takes a configuration — three slots, each with a type and one or more price sources, crossed with the sampled periods — and produces a flat list of computed lines. It is pure and deterministic, and deliberately knows nothing about canvases, buttons, or threads. That separation is what lets the same calculation run on the main thread during development and inside a worker later, and what lets a finished run be re-styled or re-loaded without ever being recomputed. The mathematics lives in one place; everything else is presentation.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
