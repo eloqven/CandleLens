@@ -99,6 +99,10 @@ A calculation is not a moment; it is a record that moves through a lifecycle —
 
 Before any heavy calculation begins, the instrument states its price: how many lines, how many candles, how many data points, and a best-effort time estimate. This is not a decorative number — it is derived from the actual selected configuration, so the user can decide whether a ten-minute run is worth starting. And the progress bar that follows measures *lines completed*, never the clock, because an estimate that quietly becomes a lie is worse than no estimate. The system may run for minutes; it will not pretend to know exactly how long.
 
+## Two runs are the same experiment, or they are not
+
+Every run carries a deterministic fingerprint of the configuration that actually affects the math — asset, interval, history, indicator types, sources, range, mode, step, divisor. Presentation is excluded on purpose: a red line and a blue line that compute identically are the *same experiment*, and the instrument should know it. The fingerprint lets the system prevent accidental duplicate runs, group comparable experiments, and answer the researcher's recurring question — "have I already tried this?" — with certainty rather than memory.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
