@@ -47,6 +47,10 @@ The validated 1-minute history is stored as the single source of truth. Every la
 
 Bitcoin is the mandatory benchmark: liquid, long-lived, high-quality. The second asset is not picked because it is fashionable. It is chosen by an explicit scoring process — volume, obtainable history, gap-freeness, and, crucially, *behavioral difference* from Bitcoin. A control asset that merely mirrors BTC would teach nothing; the point of having two is to see where moving-average structure is universal and where it is asset-specific. The choice and its rationale are recorded, not implied.
 
+## The candle interval is a lens, not a preset
+
+Any integer interval from 1 to 377 minutes is valid — not only the familiar Fibonacci numbers. Larger intervals are *aggregated*, never re-fetched, so the choice of interval is a free experimental dial: compress 233 minutes of history into one candle and the same moving averages describe a different rhythm. The interval selector is deliberately unrestricted because the research question is about structure across scales, not about a handful of conventional chart settings.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
