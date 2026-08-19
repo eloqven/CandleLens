@@ -43,6 +43,10 @@ Before any candle is trusted, the sequence is validated: timestamp continuity, d
 
 The validated 1-minute history is stored as the single source of truth. Every larger candle interval — 2 minutes, 233 minutes, 377 minutes — is *derived* from it by deterministic aggregation, never re-downloaded. This keeps the instrument internally consistent: the same base always yields the same derived candle, so an experiment is reproducible down to the pixel. Persistence is not an afterthought; the base dataset, once verified, is kept so that revisiting an asset does not mean re-fetching and re-validating the past.
 
+## A benchmark and a contrast
+
+Bitcoin is the mandatory benchmark: liquid, long-lived, high-quality. The second asset is not picked because it is fashionable. It is chosen by an explicit scoring process — volume, obtainable history, gap-freeness, and, crucially, *behavioral difference* from Bitcoin. A control asset that merely mirrors BTC would teach nothing; the point of having two is to see where moving-average structure is universal and where it is asset-specific. The choice and its rationale are recorded, not implied.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
