@@ -87,6 +87,10 @@ A run is not a transient computation; it is a stored artifact. The raw indicator
 
 With hundreds of lines on screen, color is not decoration — it is the axis we read by. A gradient from short to long period lets the eye trace how behavior changes with horizon; a palette keeps many families distinguishable; per-line colors make individual periods addressable. Because color is presentation, it is stored separately from the numbers, so the same computed result can be re-colored endlessly without ever being recomputed. The meaning lives in the geometry; color is the lens we tune to see it.
 
+## The mesh: many lines, one field
+
+When thousands of indicator lines are computed, drawing them all is not insight — it is noise. The mesh mode collapses the entire family into a single field: at every point in price-time, how strongly do nearby lines pull? The result is a heat surface that reveals *where* moving averages crowd and *where* they don't, without the eye drowning in individual strokes. A steepness control tunes how abruptly the field transitions near a line, letting the user sharpen the boundaries they care about or smooth them into a continuous wash — a viewing parameter, never a recomputation.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.

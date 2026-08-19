@@ -5,6 +5,7 @@
 import type { Candle } from '../core/types';
 import { drawCandles } from './candles';
 import { computePriceRange, priceToY, indexToX } from './scale';
+import { computeMeshField, heatColor } from './mesh';
 import type { Renderer, RenderScene, RenderLine } from './renderer';
 
 export class Canvas2DRenderer implements Renderer {
@@ -31,9 +32,52 @@ export class Canvas2DRenderer implements Renderer {
     const layout = { left: 8, right: w - this.axisW, top: 8, bottom: h - 8 };
     drawCandles(this.ctx, scene.candles, layout);
 
-    if (scene.mode === 'lines') {
+    if (scene.mode === 'mesh') {
+      this.drawMesh(scene, layout);
+    } else if (scene.mode === 'lines') {
       this.drawLines(scene.candles, scene.lines, layout);
     }
+  }
+
+  private drawMesh(
+    scene: RenderScene,
+    layout: { left: number; right: number; top: number; bottom: number },
+  ): void {
+    const rows = 240;
+    const steepness = scene.meshSteepness ?? 0.5;
+    // Build the field from the raw line values (geometry is derived in C20/C14
+    // consumers; here we reconstruct a minimal geometry from scene lines).
+    const geometry = {
+      candleCount: scene.candles.length,
+      priceMin: computePriceRange(scene.candles).min,
+      priceMax: computePriceRange(scene.candles).max,
+      lines: scene.lines.map((l) => ({
+        id: l.id,
+        type: 'MA' as const,
+        source: 'close' as const,
+        period: 0,
+        raw: l.values,
+        normalized: new Float64Array(l.values.length),
+      })),
+    };
+    const field = computeMeshField(geometry, rows, steepness);
+
+    const off = document.createElement('canvas');
+    off.width = field.cols;
+    off.height = field.rows;
+    const octx = off.getContext('2d');
+    if (!octx) return;
+    const img = octx.createImageData(field.cols, field.rows);
+    for (let i = 0; i < field.data.length; i++) {
+      const [r, g, b, a] = heatColor(field.data[i]);
+      img.data[i * 4] = r;
+      img.data[i * 4 + 1] = g;
+      img.data[i * 4 + 2] = b;
+      img.data[i * 4 + 3] = a;
+    }
+    octx.putImageData(img, 0, 0);
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.drawImage(off, layout.left, layout.top, layout.right - layout.left, layout.bottom - layout.top);
   }
 
   private drawLines(
