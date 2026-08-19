@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { fingerprint, canonicalConfig } from '../../src/core/fingerprint';
 import type { RunConfig } from '../../src/core/config';
+import type { PriceSource } from '../../src/core/types';
 
 const base: RunConfig = {
   asset: { symbol: 'BTCUSDT', sourceName: 'Binance' },
@@ -40,8 +41,8 @@ describe('fingerprint', () => {
   });
 
   it('is order-independent for sources', () => {
-    const a = { ...base, indicator: { ...base.indicator, slots: [{ type: 'MA' as const, sources: ['open', 'close'] }] } };
-    const b = { ...base, indicator: { ...base.indicator, slots: [{ type: 'MA' as const, sources: ['close', 'open'] }] } };
+    const a = { ...base, indicator: { ...base.indicator, slots: [{ type: 'MA' as const, sources: ['open', 'close'] as PriceSource[] }] } };
+    const b = { ...base, indicator: { ...base.indicator, slots: [{ type: 'MA' as const, sources: ['close', 'open'] as PriceSource[] }] } };
     expect(fingerprint(a)).toBe(fingerprint(b));
   });
 
