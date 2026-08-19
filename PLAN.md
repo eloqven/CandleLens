@@ -90,6 +90,10 @@ Proposed commit sequence (each its own signed commit + README update + tests whe
 - `C28` Single + multi-run load (same-interval enforcement) (`ui/loadTab.ts`)
 - `C29` Recolor previous run without recalculation (`ui/recolor.ts`)
 
+**Phase 1H — Settings & point inspection (added)**
+- `C30` Settings persistence (localStorage): capture pre-calc `RunConfig` and post-calc viewer settings (layer visibility, opacity, colors, source toggles); auto-load on startup so refresh/restart resumes last state.
+- `C31` Point-click OHLC source toggles: when a snap point is selected and nearby indicator lines are revealed, show a panel with 4 toggles (Open / High / Low / Close), all ON by default, filtering the revealed lines by price source. "Clear selection" resets.
+
 Tests (MD §35) are added **within** the relevant commit (e.g. `C3` ships validation tests, `C6` ships aggregation tests, `C9` ships indicator correctness tests, etc.).
 
 ## 6. Parallelization approach
@@ -109,3 +113,8 @@ Then integration commits (`C11`, `C13`, `C20`, UI tabs) are done sequentially si
 1. `gh repo create CandleLens --public` (or via gh), clone, branch `part1`.
 2. Land `C0`→`C29` in order, each signed + README-updated + pushed.
 3. After each push, README reflects the expanded concept.
+
+## 9. Status
+- **C0–C31 complete and pushed to `master`.** Each requirement shipped as its own signed commit with a README update and unit tests where the logic was pure/testable.
+- `C30` (settings persistence) and `C31` (point-click OHLC toggles) were added by the user after the original plan and implemented last, each as its own signed commit.
+- **Dataset status:** no live Binance data has been ingested yet. `C2` ingestion is implemented and mock-tested only. BTC/USDT is the designated mandatory asset; the control asset (shortlist ETHUSDT/SOLUSDT/BNBUSDT/XRPUSDT/DOGEUSDT) is still to be chosen, and the 48-month fetch is a pending manual step.
