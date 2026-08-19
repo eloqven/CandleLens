@@ -143,6 +143,10 @@ A run can be reopened alone, or several at once — overlaid to compare how diff
 
 The expensive part of an experiment is the math. The color is not. When the researcher wants a different gradient, a different palette, a different way of telling periods apart, the instrument recolors the already-computed lines instantly — no worker, no wait. Presentation is cheap precisely because the data is fixed. This is the dividend of separating the matrix from its rendering.
 
+## The instrument remembers how you left it
+
+Configuration is a chore to re-enter. The instrument persists the last pre-calculation configuration and the last viewer settings — render mode, colors, mesh — to local storage, and restores them on the next open. Nothing leaves the machine; it is a convenience, not a record. The researcher's setup survives a refresh, so the next session starts where the last one ended.
+
 ## Status
 
 Part 1 is under active construction (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase grows into it one capability at a time.
