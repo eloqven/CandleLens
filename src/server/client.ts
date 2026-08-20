@@ -78,10 +78,16 @@ interface IndicatorsResponse {
 }
 
 export class CandleLensClient {
+  private readonly fetchImpl: typeof fetch;
+
   constructor(
     private readonly baseUrl: string,
-    private readonly fetchImpl: typeof fetch = fetch,
-  ) {}
+    fetchImpl: typeof fetch = fetch,
+  ) {
+    // Bind to the global so the detached reference stays callable (calling the
+    // host `fetch` with a different `this` throws "Illegal invocation" in browsers).
+    this.fetchImpl = fetchImpl.bind(globalThis);
+  }
 
   async fetchCandles(symbol: string, limit = 1000): Promise<Candle[]> {
     const url = `${this.baseUrl}/candles?symbol=${encodeURIComponent(symbol)}&limit=${limit}`;

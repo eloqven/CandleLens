@@ -161,7 +161,7 @@ export class Viewer {
 
     window.addEventListener('mousemove', (e) => {
       const rect = this.canvas.getBoundingClientRect();
-      if (this.dragging) {
+      if (this.dragging && this.viewport) {
         const dx = e.clientX - this.lastX;
         if (Math.abs(dx) > 2) this.dragMoved = true;
         this.viewport.panPixels(-dx);
@@ -173,6 +173,7 @@ export class Viewer {
     });
 
     window.addEventListener('mouseup', (e) => {
+      if (!this.viewport) return;
       if (!this.dragging) return;
       this.dragging = false;
       if (!this.dragMoved) this.handleClick(e);
