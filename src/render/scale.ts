@@ -35,6 +35,18 @@ export function indexToX(index: number, count: number, left: number, right: numb
   return left + (index + 0.5) * slot;
 }
 
+/** Map a candle index to x when only `viewCount` candles are visible from `viewStart`. */
+export function indexToXViewport(
+  index: number,
+  viewStart: number,
+  viewCount: number,
+  left: number,
+  right: number,
+): number {
+  if (viewCount <= 0) return left;
+  return left + ((index - viewStart) / viewCount) * (right - left);
+}
+
 /** Width of a single candle body in pixels (with a small gap). */
 export function candleWidth(count: number, left: number, right: number, gap = 0.2): number {
   if (count <= 0) return 0;

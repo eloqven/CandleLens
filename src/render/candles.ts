@@ -2,7 +2,7 @@
 // basic viewer used by the CREATE tab before any indicator is calculated.
 
 import type { Candle } from '../core/types';
-import { computePriceRange, priceToY, indexToX, candleWidth } from './scale';
+import { computePriceRange, priceToY, indexToX, indexToXViewport, candleWidth } from './scale';
 
 export interface CandleLayout {
   left: number;
@@ -12,6 +12,9 @@ export interface CandleLayout {
   upColor?: string;
   downColor?: string;
   axisColor?: string;
+  /** Optional zoom/pan window (MD §22). */
+  viewStart?: number;
+  viewCount?: number;
 }
 
 export function drawCandles(
@@ -27,17 +30,27 @@ export function drawCandles(
     upColor = '#26a69a',
     downColor = '#ef5350',
     axisColor = '#888',
+    viewStart = 0,
+    viewCount = candles.length,
   } = layout;
 
   ctx.clearRect(left, top, right - left, bottom - top);
   if (candles.length === 0) return;
 
-  const range = computePriceRange(candles);
-  const w = candleWidth(candles.length, left, right);
+  const start = Math.max(0, Math.floor(viewStart));
+  const end = Math.min(candles.length - 1, Math.ceil(viewStart + viewCount));
+  const visible = candles.slice(start, end + 1);
+  const range = visible.length > 0 ? computePriceRange(visible) : computePriceRange(candles);
+  const w = candleWidth(viewCount, left, right);
 
-  for (let i = 0; i < candles.length; i++) {
+  const xAt = (i: number) =>
+    viewCount >= candles.length
+      ? indexToX(i, candles.length, left, right)
+      : indexToXViewport(i, viewStart, viewCount, left, right);
+
+  for (let i = start; i <= end; i++) {
     const c = candles[i];
-    const x = indexToX(i, candles.length, left, right);
+    const x = xAt(i);
     const yHigh = priceToY(c.high, range, top, bottom);
     const yLow = priceToY(c.low, range, top, bottom);
     const yOpen = priceToY(c.open, range, top, bottom);

@@ -2,6 +2,10 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { spawn, type ChildProcess } from 'child_process';
 import { existsSync } from 'fs';
 import { CandleLensClient } from '../../src/server/client';
+import { computeIndicatorsServer } from '../../src/server/serverCompute';
+import { buildGeometry } from '../../src/render/geometry';
+import { assignLineColors } from '../../src/render/colors';
+import type { RunConfig } from '../../src/core/config';
 
 const PY = process.env.CANDLELENS_PYTHON ?? 'python';
 const PORT = 8231;
@@ -71,5 +75,32 @@ describe.skipIf(!pythonAvailable)('live server-spike integration', () => {
     expect(result.lines.length).toBe(3);
     expect(result.lines[0].type).toBe('EMA');
     expect(result.lines[0].values.length).toBeGreaterThan(0);
+  });
+
+  it('computes a full scene via serverCompute + geometry + colors', async () => {
+    const client = new CandleLensClient(BASE);
+    const config: RunConfig = {
+      asset: { symbol: 'BTCUSDT', sourceName: 'server' },
+      candle: { intervalMinutes: 1, historyPercent: 1 },
+      indicator: {
+        slots: [{ type: 'MA', sources: ['close'] }],
+        range: { min: 2, max: 4 },
+        mode: 'sequential',
+        step: 1,
+      },
+      color: { mode: 'sequential', start: '#ff0000', end: '#0000ff' },
+      renderMode: 'lines',
+      mesh: { steepness: 0.5 },
+    };
+    const res = await computeIndicatorsServer(config, client);
+    expect(res.lines.length).toBe(3);
+    expect(res.candles.length).toBeGreaterThan(0);
+    const geo = buildGeometry(res.candles, res.lines);
+    expect(geo.lines.length).toBe(3);
+    const colors = assignLineColors(
+      res.lines.map((l) => ({ id: l.id, period: l.period })),
+      config.color,
+    );
+    expect(Object.keys(colors).length).toBe(3);
   });
 });

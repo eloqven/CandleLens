@@ -165,3 +165,10 @@ Switch branches to choose the mode; the shared concepts above apply to both.
 ## Status
 
 Part 1 is complete (see `PLAN.md` for the phased implementation roadmap). This document describes the *idea*; the codebase has grown into it one capability at a time. The instrument is ready for the first real experiments — though, as of this writing, no live market data has yet been ingested (BTC/USDT is the designated mandatory asset, and a control asset is still to be chosen).
+
+Both data modes are implemented and wired into a UI: `master` (browser-only:
+compressed IndexedDB + Web Worker compute) and `server-spike` (Python + SQLite
+API computing indicator lines server-side, with the same render pipeline). On
+`server-spike`, `src/ui/app.ts` drives the full flow — configure, calculate
+against the API, render, interact (zoom/pan, snapping, click-to-reveal,
+multi-point common lines, layers, OHLC filters), recolor, and save/load runs.

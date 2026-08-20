@@ -3,6 +3,7 @@
 // small so a Canvas2D implementation can later be swapped for WebGL.
 
 import type { Candle, RenderMode } from '../core/types';
+import type { RenderGeometry } from './geometry';
 
 export interface RenderLine {
   id: string;
@@ -18,6 +19,14 @@ export interface RenderScene {
   mode: RenderMode;
   /** Mesh gradient steepness, 0..1 (used when mode === 'mesh'). */
   meshSteepness?: number;
+  /** Global price range including indicator values; defaults to candle range. */
+  priceMin?: number;
+  priceMax?: number;
+  /** Full render geometry, used by mesh rendering. */
+  geometry?: RenderGeometry;
+  /** Zoom/pan window (MD §22). */
+  viewStart?: number;
+  viewCount?: number;
 }
 
 export interface Renderer {

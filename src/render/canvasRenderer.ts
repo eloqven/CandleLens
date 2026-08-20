@@ -4,7 +4,7 @@
 
 import type { Candle } from '../core/types';
 import { drawCandles } from './candles';
-import { computePriceRange, priceToY, indexToX } from './scale';
+import { computePriceRange, priceToY, indexToX, indexToXViewport } from './scale';
 import { computeMeshField, heatColor } from './mesh';
 import type { Renderer, RenderScene, RenderLine } from './renderer';
 
@@ -29,13 +29,20 @@ export class Canvas2DRenderer implements Renderer {
     this.canvas.height = h * dpr;
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const layout = { left: 8, right: w - this.axisW, top: 8, bottom: h - 8 };
+    const layout = {
+      left: 8,
+      right: w - this.axisW,
+      top: 8,
+      bottom: h - 8,
+      viewStart: scene.viewStart,
+      viewCount: scene.viewCount,
+    };
     drawCandles(this.ctx, scene.candles, layout);
 
     if (scene.mode === 'mesh') {
       this.drawMesh(scene, layout);
     } else if (scene.mode === 'lines') {
-      this.drawLines(scene.candles, scene.lines, layout);
+      this.drawLines(scene.candles, scene.lines, layout, scene.priceMin, scene.priceMax);
     }
   }
 
@@ -45,21 +52,20 @@ export class Canvas2DRenderer implements Renderer {
   ): void {
     const rows = 240;
     const steepness = scene.meshSteepness ?? 0.5;
-    // Build the field from the raw line values (geometry is derived in C20/C14
-    // consumers; here we reconstruct a minimal geometry from scene lines).
-    const geometry = {
-      candleCount: scene.candles.length,
-      priceMin: computePriceRange(scene.candles).min,
-      priceMax: computePriceRange(scene.candles).max,
-      lines: scene.lines.map((l) => ({
-        id: l.id,
-        type: 'MA' as const,
-        source: 'close' as const,
-        period: 0,
-        raw: l.values,
-        normalized: new Float64Array(l.values.length),
-      })),
-    };
+    const geometry =
+      scene.geometry ?? {
+        candleCount: scene.candles.length,
+        priceMin: scene.priceMin ?? computePriceRange(scene.candles).min,
+        priceMax: scene.priceMax ?? computePriceRange(scene.candles).max,
+        lines: scene.lines.map((l) => ({
+          id: l.id,
+          type: 'MA' as const,
+          source: 'close' as const,
+          period: 0,
+          raw: l.values,
+          normalized: new Float64Array(l.values.length),
+        })),
+      };
     const field = computeMeshField(geometry, rows, steepness);
 
     const off = document.createElement('canvas');
@@ -83,11 +89,22 @@ export class Canvas2DRenderer implements Renderer {
   private drawLines(
     candles: Candle[],
     lines: RenderLine[],
-    layout: { left: number; right: number; top: number; bottom: number },
+    layout: { left: number; right: number; top: number; bottom: number; viewStart?: number; viewCount?: number },
+    priceMin?: number,
+    priceMax?: number,
   ): void {
     if (candles.length === 0) return;
-    const range = computePriceRange(candles);
+    const range =
+      priceMin != null && priceMax != null
+        ? { min: priceMin, max: priceMax }
+        : computePriceRange(candles);
     const n = candles.length;
+    const viewStart = layout.viewStart ?? 0;
+    const viewCount = layout.viewCount ?? n;
+    const start = Math.max(0, Math.floor(viewStart));
+    const end = Math.min(n - 1, Math.ceil(viewStart + viewCount));
+    const xAt = (i: number) =>
+      viewCount >= n ? indexToX(i, n, layout.left, layout.right) : indexToXViewport(i, viewStart, viewCount, layout.left, layout.right);
 
     for (const line of lines) {
       if (!line.visible) continue;
@@ -95,13 +112,13 @@ export class Canvas2DRenderer implements Renderer {
       this.ctx.lineWidth = 1;
       this.ctx.beginPath();
       let started = false;
-      for (let i = 0; i < n; i++) {
+      for (let i = start; i <= end; i++) {
         const v = line.values[i];
         if (Number.isNaN(v)) {
           started = false;
           continue;
         }
-        const x = indexToX(i, n, layout.left, layout.right);
+        const x = xAt(i);
         const y = priceToY(v, range, layout.top, layout.bottom);
         if (!started) {
           this.ctx.moveTo(x, y);

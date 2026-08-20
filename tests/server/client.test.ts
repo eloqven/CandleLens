@@ -44,4 +44,35 @@ describe('CandleLensClient', () => {
     expect(got).toHaveLength(1);
     expect(got[0].close).toBe(1.5);
   });
+
+  it('fetches assets', async () => {
+    const client = new CandleLensClient(
+      'http://localhost:8000',
+      mockFetch({ assets: [{ symbol: 'BTCUSDT', sourceName: 'Binance', startTime: 0, endTime: 1, candleCount: 10, status: 'ready' }] }),
+    );
+    const assets = await client.fetchAssets();
+    expect(assets[0].symbol).toBe('BTCUSDT');
+  });
+
+  it('lists, saves, loads and deletes runs', async () => {
+    const calls: string[] = [];
+    const router = (url: string) => {
+      calls.push(url);
+      if (url.endsWith('/runs') && !url.includes('/runs/')) return { runs: [{ id: 'r1', createdAt: 't', asset: { symbol: 'BTCUSDT' } }] };
+      if (url.includes('/runs/r1')) return { meta: { id: 'r1', createdAt: 't', asset: { symbol: 'BTCUSDT' } }, payload: { lines: [], geometry: {} } };
+      return {};
+    };
+    const fetchImpl = ((u: string) => ({ ok: true, json: async () => router(u) })) as unknown as typeof fetch;
+    const client = new CandleLensClient('http://localhost:8000', fetchImpl);
+
+    const runs = await client.listRuns();
+    expect(runs[0].id).toBe('r1');
+
+    await client.saveRun({ id: 'r1', createdAt: 't', asset: { symbol: 'BTCUSDT' } }, { lines: [], geometry: {} });
+    const loaded = await client.loadRun('r1');
+    expect(loaded.meta.id).toBe('r1');
+
+    await client.deleteRun('r1');
+    expect(calls.some((c) => c.includes('/runs/r1'))).toBe(true);
+  });
 });
