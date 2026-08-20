@@ -1,3 +1,6 @@
+# dependencies
+node_modules/
+
 # server-spike SQLite databases (generated locally)
 server/*.db
 server/*.db-journal
@@ -5,3 +8,5 @@ server/*.db-journal
 # python cache
 __pycache__/
 *.pyc
+.venv/
+*.egg-info/

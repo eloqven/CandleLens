@@ -58,16 +58,18 @@ describe.skipIf(!pythonAvailable)('live server-spike integration', () => {
 
   it('fetches computed indicator lines from the running API', async () => {
     const client = new CandleLensClient(BASE);
-    const lines = await client.fetchIndicators({
+    const result = await client.fetchIndicators({
       symbol: 'BTCUSDT',
       interval: 1,
-      type: 'EMA',
-      source: 'close',
+      history: 1,
+      slots: [{ type: 'EMA', sources: ['close'] }],
       min: 2,
       max: 4,
+      mode: 'sequential',
+      step: 1,
     });
-    expect(lines.length).toBe(3);
-    expect(lines[0].type).toBe('EMA');
-    expect(lines[0].values.length).toBeGreaterThan(0);
+    expect(result.lines.length).toBe(3);
+    expect(result.lines[0].type).toBe('EMA');
+    expect(result.lines[0].values.length).toBeGreaterThan(0);
   });
 });

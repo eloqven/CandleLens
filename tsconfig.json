@@ -8,7 +8,7 @@
     "noUnusedParameters": true,
     "noImplicitOverride": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker"],
-    "types": ["vite/client", "vitest/globals"],
+    "types": ["vite/client", "vitest/globals", "node"],
     "skipLibCheck": true,
     "isolatedModules": true,
     "esModuleInterop": true,
