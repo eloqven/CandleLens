@@ -1,6 +1,9 @@
 # dependencies
 node_modules/
 
+# vite build output
+dist/
+
 # server-spike SQLite databases (generated locally)
 server/*.db
 server/*.db-journal
