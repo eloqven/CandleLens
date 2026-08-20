@@ -1,11 +1,8 @@
-"""Indicator computation for the server-spike mode (MD §9, §11).
+﻿"""Indicator computation for the server-spike mode (mirrors the browser engine)."""
 
-Mirrors the browser engine's MA / EMA / WMA semantics so both modes agree.
-Series are plain Python lists of floats; warm-up positions are returned as
-None (-> JSON null) to match the TS Float64Array NaN convention.
-"""
+from typing import List, Optional, Dict, Any
 
-from typing import List, Optional
+from periods import generate_periods
 
 
 def sma(values: List[float], period: int) -> List[Optional[float]]:
@@ -61,3 +58,22 @@ def compute_indicator(kind: str, series: List[float], period: int) -> List[Optio
     if kind == "WMA":
         return wma(series, period)
     raise ValueError(f"unknown indicator kind: {kind}")
+
+
+def compute_all(candles, slots, min_p, max_p, mode, step=1, divisor=None):
+    periods = generate_periods(min_p, max_p, mode, step, divisor)
+    lines: List[Dict[str, Any]] = []
+    for slot in slots:
+        kind = slot["type"]
+        for source in slot["sources"]:
+            series = [c[source] for c in candles]
+            for p in periods:
+                values = compute_indicator(kind, series, p)
+                lines.append({
+                    "id": f"{kind}-{source}-{p}",
+                    "type": kind,
+                    "source": source,
+                    "period": p,
+                    "values": values,
+                })
+    return lines
