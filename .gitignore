@@ -7,6 +7,8 @@ dist/
 # server-spike SQLite databases (generated locally)
 server/*.db
 server/*.db-journal
+*.db
+*.db-journal
 
 # python cache
 __pycache__/
