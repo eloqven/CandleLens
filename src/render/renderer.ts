@@ -27,6 +27,8 @@ export interface RenderScene {
   /** Zoom/pan window (MD §22). */
   viewStart?: number;
   viewCount?: number;
+  /** Hovered snap point for visual highlighting (MD §23). */
+  hover?: { index: number; kind: string; price: number };
 }
 
 export interface Renderer {

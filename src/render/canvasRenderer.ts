@@ -6,6 +6,7 @@ import type { Candle } from '../core/types';
 import { drawCandles } from './candles';
 import { computePriceRange, priceToY, indexToX, indexToXViewport } from './scale';
 import { computeMeshField, heatColor } from './mesh';
+import { snapPointPrice, SNAP_KINDS } from '../interaction/snapping';
 import type { Renderer, RenderScene, RenderLine } from './renderer';
 
 export class Canvas2DRenderer implements Renderer {
@@ -36,6 +37,8 @@ export class Canvas2DRenderer implements Renderer {
       bottom: h - 8,
       viewStart: scene.viewStart,
       viewCount: scene.viewCount,
+      priceMin: scene.priceMin,
+      priceMax: scene.priceMax,
     };
     drawCandles(this.ctx, scene.candles, layout);
 
@@ -44,6 +47,55 @@ export class Canvas2DRenderer implements Renderer {
     } else if (scene.mode === 'lines') {
       this.drawLines(scene.candles, scene.lines, layout, scene.priceMin, scene.priceMax);
     }
+
+    if (scene.hover) this.drawHover(scene, layout);
+  }
+
+  private drawHover(
+    scene: RenderScene,
+    layout: { left: number; right: number; top: number; bottom: number; viewStart?: number; viewCount?: number },
+  ): void {
+    const h = scene.hover!;
+    const candle = scene.candles[h.index];
+    if (!candle) return;
+    const range =
+      scene.priceMin != null && scene.priceMax != null && scene.priceMax > scene.priceMin
+        ? { min: scene.priceMin, max: scene.priceMax }
+        : computePriceRange(scene.candles);
+    const n = scene.candles.length;
+    const viewStart = layout.viewStart ?? 0;
+    const viewCount = layout.viewCount ?? n;
+    const x = viewCount >= n ? indexToX(h.index, n, layout.left, layout.right) : indexToXViewport(h.index, viewStart, viewCount, layout.left, layout.right);
+    const ctx = this.ctx;
+
+    ctx.save();
+    // Horizontal guide at the snapped price.
+    const ySnap = priceToY(h.price, range, layout.top, layout.bottom);
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(layout.left, ySnap);
+    ctx.lineTo(layout.right, ySnap);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // All five snap points of the hovered candle; highlight the active one.
+    for (const kind of SNAP_KINDS) {
+      const price = snapPointPrice(candle, kind);
+      const y = priceToY(price, range, layout.top, layout.bottom);
+      const active = kind === h.kind;
+      ctx.beginPath();
+      ctx.arc(x, y, active ? 5 : 3, 0, Math.PI * 2);
+      ctx.fillStyle = active ? '#ffd54f' : 'rgba(255,255,255,0.55)';
+      ctx.fill();
+      if (active) {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ffd54f';
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
   }
 
   private drawMesh(

@@ -15,6 +15,9 @@ export interface CandleLayout {
   /** Optional zoom/pan window (MD §22). */
   viewStart?: number;
   viewCount?: number;
+  /** Optional global price range; when present, candles share it with lines. */
+  priceMin?: number;
+  priceMax?: number;
 }
 
 export function drawCandles(
@@ -32,15 +35,23 @@ export function drawCandles(
     axisColor = '#888',
     viewStart = 0,
     viewCount = candles.length,
+    priceMin,
+    priceMax,
   } = layout;
 
   ctx.clearRect(left, top, right - left, bottom - top);
   if (candles.length === 0) return;
 
+  // Share the global price range with the indicator lines so candles and lines
+  // stay vertically linked through zoom/pan (MD §22/§23). Fall back to the full
+  // candle range only when no global range is supplied.
+  const range =
+    priceMin != null && priceMax != null && priceMax > priceMin
+      ? { min: priceMin, max: priceMax }
+      : computePriceRange(candles);
+
   const start = Math.max(0, Math.floor(viewStart));
   const end = Math.min(candles.length - 1, Math.ceil(viewStart + viewCount));
-  const visible = candles.slice(start, end + 1);
-  const range = visible.length > 0 ? computePriceRange(visible) : computePriceRange(candles);
   const w = candleWidth(viewCount, left, right);
 
   const xAt = (i: number) =>

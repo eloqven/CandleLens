@@ -42,6 +42,7 @@ export class Viewer {
   private dragging = false;
   private dragMoved = false;
   private lastX = 0;
+  private hover: { index: number; kind: SnapKind; price: number } | null = null;
 
   constructor(container: HTMLElement) {
     this.canvas = document.createElement('canvas');
@@ -136,6 +137,7 @@ export class Viewer {
       geometry: this.geometry ?? undefined,
       viewStart: this.viewport?.viewStart ?? 0,
       viewCount: this.viewport?.viewCount ?? this.candles.length,
+      hover: this.hover ?? undefined,
     };
   }
 
@@ -178,11 +180,23 @@ export class Viewer {
       this.dragging = false;
       if (!this.dragMoved) this.handleClick(e);
     });
+
+    this.canvas.addEventListener('mouseleave', () => {
+      if (this.hover !== null) {
+        this.hover = null;
+        this.hoverLabel.style.display = 'none';
+        this.render();
+      }
+    });
   }
 
   private updateHover(x: number, y: number, rect: DOMRect): void {
-    if (this.candles.length === 0 || !this.geometry) {
-      this.hoverLabel.style.display = 'none';
+    if (this.candles.length === 0 || !this.geometry || x < 0 || x > rect.width || y < 0 || y > rect.height) {
+      if (this.hover !== null) {
+        this.hover = null;
+        this.hoverLabel.style.display = 'none';
+        this.render();
+      }
       return;
     }
     const idx = Math.max(0, Math.min(this.candles.length - 1, Math.round(this.viewport.indexAtPixel(x))));
@@ -190,10 +204,18 @@ export class Viewer {
     const range = { min: this.geometry.priceMin, max: this.geometry.priceMax };
     const priceToYAt = (p: number) => priceToY(p, range, 8, rect.height - 8);
     const snap = nearestSnapPoint(candle, y, priceToYAt);
+    const next = { index: idx, kind: snap.kind, price: snap.price };
+    if (this.hover && this.hover.index === next.index && this.hover.kind === next.kind && this.hover.price === next.price) {
+      this.hoverLabel.style.left = `${x + 12}px`;
+      this.hoverLabel.style.top = `${y + 12}px`;
+      return;
+    }
+    this.hover = next;
     this.hoverLabel.style.display = 'block';
     this.hoverLabel.style.left = `${x + 12}px`;
     this.hoverLabel.style.top = `${y + 12}px`;
     this.hoverLabel.textContent = `#${idx} ${snap.kind} ${snap.price.toFixed(2)}`;
+    this.render();
   }
 
   private handleClick(e: MouseEvent): void {
