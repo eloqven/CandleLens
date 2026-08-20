@@ -160,6 +160,8 @@ export class Canvas2DRenderer implements Renderer {
 
     for (const line of lines) {
       if (!line.visible) continue;
+      this.ctx.save();
+      this.ctx.globalAlpha = line.opacity ?? 1;
       this.ctx.strokeStyle = line.color;
       this.ctx.lineWidth = 1;
       this.ctx.beginPath();
@@ -180,6 +182,7 @@ export class Canvas2DRenderer implements Renderer {
         }
       }
       this.ctx.stroke();
+      this.ctx.restore();
     }
   }
 }

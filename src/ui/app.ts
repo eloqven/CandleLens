@@ -42,6 +42,7 @@ export class App {
   private status: HTMLElement;
   private runSelect: HTMLSelectElement;
   private layersBox: HTMLElement;
+  private lastColors: Record<string, string> = {};
 
   constructor(root: HTMLElement) {
     root.style.display = 'flex';
@@ -115,6 +116,7 @@ export class App {
       this.lastLines = result.lines;
       this.lastCandles = result.candles;
       this.lastGeometry = geometry;
+      this.lastColors = colors;
       this.viewer.setData(result.candles, result.lines, geometry, colors);
       this.renderLayers(result.lines);
       const workload = estimateWorkload(config.indicator, result.candleCount);
@@ -140,17 +142,27 @@ export class App {
   }
 
   private renderLayers(lines: IndicatorLine[]): void {
-    this.layersBox.replaceChildren(el('div', { textContent: 'Layers', style: 'color:#bbb;margin-bottom:4px;' }));
-    const types = [...new Set(lines.map((l) => l.type))];
-    const sources = [...new Set(lines.map((l) => l.source))];
-    const addToggle = (label: string, checked: boolean, on: (v: boolean) => void) => {
-      const cb = el('input', { type: 'checkbox', checked });
-      cb.onchange = () => on(cb.checked);
-      const row = el('label', { style: 'display:inline-block;margin:2px 8px 2px 0;font-size:11px;' }, [cb, label]);
-      this.layersBox.append(row);
-    };
-    types.forEach((t) => addToggle(t, true, (v) => this.viewer.patchLayer('byType', t, v)));
-    sources.forEach((s) => addToggle(s, true, (v) => this.viewer.patchLayer('bySource', s, v)));
+    this.layersBox.replaceChildren(
+      el('div', { textContent: 'Layers — visibility · opacity · color', style: 'color:#bbb;margin-bottom:4px;' }),
+    );
+    const list = el('div', { style: 'display:flex;flex-direction:column;gap:2px;' });
+    for (const l of lines) {
+      const id = l.id;
+      const cb = el('input', { type: 'checkbox', checked: true });
+      cb.onchange = () => this.viewer.setLineVisible(id, cb.checked);
+      const color = el('input', {
+        type: 'color',
+        value: this.lastColors[id] ?? '#888888',
+        style: 'width:26px;height:18px;padding:0;border:none;background:none;',
+      });
+      color.onchange = () => this.viewer.setLineColor(id, color.value);
+      const op = el('input', { type: 'range', min: '0', max: '1', step: '0.05', value: '1', style: 'width:64px;' });
+      op.onchange = () => this.viewer.setLineOpacity(id, Number(op.value));
+      const label = el('span', { textContent: `${l.type} ${l.source} ${l.period}`, style: 'font-size:11px;color:#ccc;' });
+      const row = el('label', { style: 'display:flex;align-items:center;gap:6px;' }, [cb, color, op, label]);
+      list.append(row);
+    }
+    this.layersBox.append(list);
   }
 
   private async saveRun(): Promise<void> {
@@ -204,6 +216,7 @@ export class App {
       this.lastLines = lines;
       this.lastCandles = candles;
       this.lastGeometry = geometry;
+      this.lastColors = colors;
       this.viewer.setData(candles, lines, geometry, colors);
       this.renderLayers(lines);
       this.setStatus(`Loaded run ${id}`);

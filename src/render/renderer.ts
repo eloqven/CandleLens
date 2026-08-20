@@ -11,6 +11,8 @@ export interface RenderLine {
   /** Indicator values aligned to candle indices; NaN where undefined. */
   values: Float64Array;
   visible: boolean;
+  /** Line opacity, 0..1 (MD §24). */
+  opacity?: number;
 }
 
 export interface RenderScene {

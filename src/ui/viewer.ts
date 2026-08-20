@@ -42,7 +42,15 @@ export class Viewer {
   private dragging = false;
   private dragMoved = false;
   private lastX = 0;
+  private lastY = 0;
   private hover: { index: number; kind: SnapKind; price: number } | null = null;
+  /** Vertical (price-axis) zoom window; null until data is loaded. */
+  private priceView: { min: number; max: number } | null = null;
+  /** Per-line visibility overrides (MD §24). */
+  private hiddenLines = new Set<string>();
+  /** Per-line opacity overrides (MD §24), 0..1. */
+  private lineOpacity: Record<string, number> = {};
+  private helpLabel: HTMLElement;
 
   constructor(container: HTMLElement) {
     this.canvas = document.createElement('canvas');
@@ -81,6 +89,23 @@ export class Viewer {
     } as Partial<CSSStyleDeclaration>);
     container.appendChild(this.revealPanel);
 
+    this.helpLabel = document.createElement('div');
+    Object.assign(this.helpLabel.style, {
+      position: 'absolute',
+      left: '8px',
+      bottom: '8px',
+      pointerEvents: 'none',
+      background: 'rgba(0,0,0,0.55)',
+      color: '#cfcfcf',
+      font: '10px monospace',
+      padding: '4px 6px',
+      borderRadius: '4px',
+      lineHeight: '1.4',
+    } as Partial<CSSStyleDeclaration>);
+    this.helpLabel.textContent =
+      'Wheel: zoom X · Shift+Wheel: zoom Y · Drag: pan X · Shift+Drag: pan Y · Dbl-click: reset';
+    container.appendChild(this.helpLabel);
+
     this.bindEvents();
   }
 
@@ -99,6 +124,9 @@ export class Viewer {
     this.selected = [];
     this.ohlc = defaultOHLCToggles();
     this.viewport = new Viewport(candles.length, this.canvas.getBoundingClientRect().width || 800);
+    this.priceView = { min: geometry.priceMin, max: geometry.priceMax };
+    this.hiddenLines = new Set();
+    this.lineOpacity = {};
     this.render();
   }
 
@@ -118,22 +146,84 @@ export class Viewer {
     this.render();
   }
 
+  /** Per-line visibility (MD §24). */
+  setLineVisible(id: string, visible: boolean): void {
+    if (visible) this.hiddenLines.delete(id);
+    else this.hiddenLines.add(id);
+    this.render();
+  }
+
+  /** Per-line opacity, 0..1 (MD §24). Purely visual. */
+  setLineOpacity(id: string, opacity: number): void {
+    this.lineOpacity[id] = Math.max(0, Math.min(1, opacity));
+    this.render();
+  }
+
+  /** Per-line color (MD §24 / §29). */
+  setLineColor(id: string, color: string): void {
+    this.colors[id] = color;
+    this.render();
+  }
+
+  /** Reset both horizontal and vertical zoom to the full data extent. */
+  resetZoom(): void {
+    if (this.geometry) {
+      this.priceView = { min: this.geometry.priceMin, max: this.geometry.priceMax };
+    }
+    if (this.viewport) {
+      this.viewport.viewStart = 0;
+      this.viewport.viewCount = this.candles.length;
+    }
+    this.render();
+  }
+
+  /** Zoom the price axis around the cursor's y position (MD §23 vertical zoom). */
+  private zoomPriceAt(y: number, factor: number): void {
+    if (!this.priceView || !this.geometry) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const top = 8;
+    const bottom = rect.height - 8;
+    const span = this.priceView.max - this.priceView.min;
+    const anchor = this.priceView.min + ((bottom - y) / (bottom - top)) * span;
+    const fullSpan = this.geometry.priceMax - this.geometry.priceMin || 1;
+    let newSpan = span * factor;
+    newSpan = Math.max(fullSpan * 0.002, Math.min(fullSpan, newSpan));
+    const ratio = span > 0 ? (anchor - this.priceView.min) / span : 0.5;
+    this.priceView.min = anchor - ratio * newSpan;
+    this.priceView.max = this.priceView.min + newSpan;
+    this.render();
+  }
+
+  /** Pan the price axis by a vertical pixel delta (MD §23 vertical pan). */
+  private panPrice(dy: number): void {
+    if (!this.priceView) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const span = this.priceView.max - this.priceView.min;
+    const pricePerPx = span / Math.max(1, rect.height - 16);
+    const delta = dy * pricePerPx;
+    this.priceView.min += delta;
+    this.priceView.max += delta;
+    this.render();
+  }
+
   getScene(): RenderScene {
     const visible = (id: string) =>
       isLineVisible(this.lines.find((l) => l.id === id)!, this.toggles) &&
+      !this.hiddenLines.has(id) &&
       (this.revealed === null || this.revealed.has(id));
     const renderLines: RenderLine[] = this.lines.map((l) => ({
       id: l.id,
       color: this.colors[l.id] ?? '#888888',
       values: l.values,
       visible: visible(l.id),
+      opacity: this.lineOpacity[l.id] ?? 1,
     }));
     return {
       candles: this.candles,
       lines: renderLines,
       mode: 'lines',
-      priceMin: this.geometry?.priceMin,
-      priceMax: this.geometry?.priceMax,
+      priceMin: this.priceView?.min,
+      priceMax: this.priceView?.max,
       geometry: this.geometry ?? undefined,
       viewStart: this.viewport?.viewStart ?? 0,
       viewCount: this.viewport?.viewCount ?? this.candles.length,
@@ -149,25 +239,36 @@ export class Viewer {
     this.canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const rect = this.canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
       const factor = e.deltaY > 0 ? 1.1 : 0.9;
-      this.viewport.zoomAt(x, factor);
-      this.render();
+      if (e.shiftKey) {
+        this.zoomPriceAt(e.clientY - rect.top, factor);
+      } else {
+        this.viewport.zoomAt(e.clientX - rect.left, factor);
+      }
     });
 
     this.canvas.addEventListener('mousedown', (e) => {
       this.dragging = true;
       this.dragMoved = false;
       this.lastX = e.clientX;
+      this.lastY = e.clientY;
     });
+
+    this.canvas.addEventListener('dblclick', () => this.resetZoom());
 
     window.addEventListener('mousemove', (e) => {
       const rect = this.canvas.getBoundingClientRect();
       if (this.dragging && this.viewport) {
         const dx = e.clientX - this.lastX;
-        if (Math.abs(dx) > 2) this.dragMoved = true;
-        this.viewport.panPixels(-dx);
+        const dy = e.clientY - this.lastY;
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) this.dragMoved = true;
+        if (e.shiftKey) {
+          this.panPrice(dy);
+        } else {
+          this.viewport.panPixels(-dx);
+        }
         this.lastX = e.clientX;
+        this.lastY = e.clientY;
         this.render();
         return;
       }
@@ -201,7 +302,7 @@ export class Viewer {
     }
     const idx = Math.max(0, Math.min(this.candles.length - 1, Math.round(this.viewport.indexAtPixel(x))));
     const candle = this.candles[idx];
-    const range = { min: this.geometry.priceMin, max: this.geometry.priceMax };
+    const range = this.priceView ?? { min: this.geometry!.priceMin, max: this.geometry!.priceMax };
     const priceToYAt = (p: number) => priceToY(p, range, 8, rect.height - 8);
     const snap = nearestSnapPoint(candle, y, priceToYAt);
     const next = { index: idx, kind: snap.kind, price: snap.price };
@@ -225,7 +326,7 @@ export class Viewer {
     const y = e.clientY - rect.top;
     const idx = Math.max(0, Math.min(this.candles.length - 1, Math.round(this.viewport.indexAtPixel(x))));
     const candle = this.candles[idx];
-    const range = { min: this.geometry.priceMin, max: this.geometry.priceMax };
+    const range = this.priceView ?? { min: this.geometry!.priceMin, max: this.geometry!.priceMax };
     const priceToYAt = (p: number) => priceToY(p, range, 8, rect.height - 8);
     const snap = nearestSnapPoint(candle, y, priceToYAt);
     const tolerance = relativeTolerance(range.max - range.min, 0.01);

@@ -16,6 +16,9 @@ function makeCanvas(): { canvas: HTMLCanvasElement; getStrokeCount: () => number
     clearRect: () => {},
     fillText: () => {},
     setTransform: () => {},
+    save: () => {},
+    restore: () => {},
+    globalAlpha: 1,
   } as unknown as CanvasRenderingContext2D;
   const canvas = {
     getContext: () => ctx,
